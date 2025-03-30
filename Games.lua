@@ -1,5 +1,5 @@
 --[[
-    Game Configuration:
+    Game List:
     Maps Roblox Place IDs to their corresponding script URLs.
     The loader script will use this table to find and execute the correct
     script based on the current game's Place ID.
