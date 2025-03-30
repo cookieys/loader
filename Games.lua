@@ -15,4 +15,11 @@ local Games = {
     -- [PLACE_ID_HERE] = "URL_TO_SCRIPT_HERE.lua",
 }
 
-return Games
+local currentPlaceId = game.PlaceId
+local scriptUrl = Games[currentPlaceId]
+
+if scriptUrl then
+    loadstring(game:HttpGet(scriptUrl))()
+else
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+end
