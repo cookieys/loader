@@ -11,6 +11,9 @@ local Games = {
     -- Fisch
     [16732694052] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Fisch.lua",
 
+    -- Rebirth Champions: Ultimate
+    [74260430392611] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Rebirth%20Champions%3A%20Ultimate.lua",
+
     -- Add new games below:
     -- [PLACE_ID_HERE] = "URL_TO_SCRIPT_HERE.lua",
 }
