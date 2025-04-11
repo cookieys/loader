@@ -1,3 +1,10 @@
+--[[
+    Game Script Loader:
+    This script maps Roblox Place IDs to their corresponding script URLs.
+    It dynamically loads and executes the appropriate script based on the current game's Place ID.
+    If no script is found for the current game, it defaults to loading Infinite Yield.
+]]
+
 -- Game List: Maps Place IDs to script URLs
 local Games = {
     -- Rebirth Champion X
@@ -13,7 +20,7 @@ local Games = {
     -- [PLACE_ID_HERE] = "URL_TO_SCRIPT_HERE.lua",
 }
 
--- Function to load and execute a Lua script from a URL
+-- Utility function to load and execute a Lua script from a URL
 local function loadScript(url)
     local success, result = pcall(function()
         -- Fetch and execute the script from the URL
@@ -21,26 +28,27 @@ local function loadScript(url)
     end)
 
     if success then
-        print("✅ Script successfully loaded and executed from URL:", url)
+        print(string.format("✅ Script successfully loaded and executed from URL: %s", url))
     else
-        warn("❌ Failed to load script from URL:", url, "\nError:", result)
+        warn(string.format("❌ Failed to load script from URL: %s\nError: %s", url, result))
     end
 end
 
--- Main Execution
+-- Main function to fetch and execute the appropriate script
 local function main()
     -- Get the current game's Place ID
     local currentPlaceId = game.PlaceId
 
-    -- Get the script URL for the current Place ID
+    -- Look up the script URL for the current Place ID
     local scriptUrl = Games[currentPlaceId]
 
-    -- Load and execute the script if found, otherwise load Infinite Yield
     if scriptUrl then
-        print("🔍 Found script for Place ID:", currentPlaceId)
+        -- Load and execute the script for the current game
+        print(string.format("🔍 Found script for Place ID: %d\nLoading script from: %s", currentPlaceId, scriptUrl))
         loadScript(scriptUrl)
     else
-        print("⚠️ No script found for Place ID:", currentPlaceId, "- Loading Infinite Yield as fallback.")
+        -- Fallback to Infinite Yield if no script is found
+        print(string.format("⚠️ No script found for Place ID: %d. Loading Infinite Yield as fallback.", currentPlaceId))
         loadScript("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source")
     end
 end
