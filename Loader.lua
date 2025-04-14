@@ -1,69 +1,49 @@
--- Utility function to fetch the content of a URL
 local function fetchUrl(url)
     local success, result = pcall(game.HttpGet, game, url)
-    if success then
-        return result
-    else
-        warn(string.format("❌ Failed to fetch URL: %s\nError: %s", url, result))
-        return nil
-    end
+    if success then return result end
+    warn("HttpGet failed for:", url, "-", tostring(result))
+    return nil
 end
 
--- Utility function to load and execute Lua code
-local function loadAndExecute(code)
-    local func, loadErr = loadstring(code)
-    if not func then
-        warn(string.format("❌ Failed to load code:\nError: %s", loadErr))
-        return false
-    end
+-- Fetch Games.lua content
+local gamesCode = fetchUrl("https://raw.githubusercontent.com/cookieys/loader/refs/heads/main/Games.lua")
+if not gamesCode then return end -- Exit silently if fetch fails
 
-    local success, execErr = pcall(func)
-    if not success then
-        warn(string.format("❌ Failed to execute code:\nError: %s", execErr))
-        return false
-    end
-
-    return true
+-- Load Games.lua code into a function
+local gamesFunc, loadErr = loadstring(gamesCode)
+if not gamesFunc then
+    warn("Games.lua loadstring failed:", tostring(loadErr))
+    return
 end
 
--- Fetch and execute the Games.lua script
-local function loadGamesTable()
-    local gamesCode = fetchUrl("https://raw.githubusercontent.com/cookieys/loader/refs/heads/main/Games.lua")
-    if not gamesCode then return nil end
-
-    local gamesFunc, loadErr = loadstring(gamesCode)
-    if not gamesFunc then
-        warn(string.format("❌ Failed to load Games.lua:\nError: %s", loadErr))
-        return nil
-    end
-
-    local success, gamesTable = pcall(gamesFunc)
-    if not success or typeof(gamesTable) ~= "table" then
-        warn("❌ Failed to execute Games.lua or result is not a table")
-        return nil
-    end
-
-    return gamesTable
+-- Execute Games.lua to get the table
+local success, gamesTable = pcall(gamesFunc)
+if not success or typeof(gamesTable) ~= "table" then
+    warn("Games.lua execution failed or did not return a table. Error:", tostring(success and typeof(gamesTable) or gamesTable))
+    return
 end
 
--- Main execution logic
-local function main()
-    local gamesTable = loadGamesTable()
-    if not gamesTable then return end
-
-    local currentPlaceId = game.PlaceId
-    local scriptUrl = gamesTable[currentPlaceId]
-
-    if scriptUrl then
-        print(string.format("🔍 Found script for PlaceID: %d\nLoading script from: %s", currentPlaceId, scriptUrl))
-        local scriptCode = fetchUrl(scriptUrl)
-        if scriptCode then
-            loadAndExecute(scriptCode)
-        end
-    else
-        print(string.format("⚠️ No script found for PlaceID: %d", currentPlaceId))
-    end
+-- Find script URL for current game
+local scriptUrl = gamesTable[game.PlaceId] -- Use PlaceId directly as key
+if not scriptUrl or typeof(scriptUrl) ~= "string" then
+    -- No script found for this place, exit silently. Can uncomment print for debug.
+    -- print("No script configured for PlaceID:", game.PlaceId)
+    return
 end
 
--- Run the main function
-main()
+-- Fetch the target script content
+local scriptCode = fetchUrl(scriptUrl)
+if not scriptCode then return end -- Exit silently if fetch fails
+
+-- Load the target script code
+local scriptFunc, scriptLoadErr = loadstring(scriptCode)
+if not scriptFunc then
+    warn("Target script loadstring failed:", scriptUrl, "-", tostring(scriptLoadErr))
+    return
+end
+
+-- Execute the target script
+local execSuccess, execErr = pcall(scriptFunc)
+if not execSuccess then
+    warn("Target script execution failed:", scriptUrl, "-", tostring(execErr))
+end
