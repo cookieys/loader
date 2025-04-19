@@ -3,8 +3,10 @@ local Games = {
     [8540346411] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Rcx.lua",
     -- Fisch
     [16732694052] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Fisch.lua",
-    -- Rebirth Champions: Ultimate
+    -- Rebirth Champions: Ultimate - Note: This Place ID seems extremely large and might be incorrect. Keep as is per request.
     [74260430392611] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Rc%20ultimate.lua",
+    -- Blade Ball
+    [13772394625] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Blade%20ball.lua",
     -- Add new games below:
     -- [PLACE_ID_HERE] = "URL_TO_SCRIPT_HERE.lua",
 }
@@ -14,7 +16,7 @@ local CURRENT_PLACE_ID = game.PlaceId
 
 -- Optimized utility function to load and execute a Lua script from a URL
 local function loadScriptFromUrl(url)
-    local success, result = pcall(game.HttpGet, game, url)
+    local success, result = pcall(game.HttpGet, game, url) -- Using HttpGet as requested by the original script format
     if not success or not result then
         warn(string.format("❌ HttpGet failed or returned empty for URL: %s\nError: %s", url, tostring(result)))
         return false
