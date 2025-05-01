@@ -1,4 +1,8 @@
-repeat wait() until game:IsLoaded()
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+task.wait(1)
+
 local function fetchUrl(url)
     local success, result = pcall(game.HttpGet, game, url)
     if success then return result end
