@@ -7,6 +7,8 @@ local Games = {
     [74260430392611] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Rc%20ultimate.lua",
     -- Blade Ball
     [13772394625] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Blade%20ball.lua",
+    -- Beaks
+    [122678592501168] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Beaks.lua",
     -- Your New Game Here
     -- [PLACE_ID_HERE] = "URL_TO_SCRIPT_HERE.lua",
 }
