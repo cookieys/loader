@@ -1,4 +1,6 @@
-local Games = {
+--!nolint UnusedGlobal
+-- Game-specific script URLs mapped by PlaceId
+local GAME_SPECIFIC_SCRIPTS = {
     -- Rebirth Champion X
     [8540346411] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Rcx.lua",
     -- Fisch
@@ -8,60 +10,109 @@ local Games = {
     -- Blade Ball
     [13772394625] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Blade%20ball.lua",
     -- Blade Ball Training Place (Solo)
-    [15234596844] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Bb%20train.lua", -- Added this line
+    [15234596844] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Bb%20train.lua",
     -- Beaks
     [122678592501168] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Beaks.lua",
     -- Your New Game Here
     -- [PLACE_ID_HERE] = "URL_TO_SCRIPT_HERE.lua",
 }
 
--- Updated Universal Loader URL
 local UNIVERSAL_LOADER_URL = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/universal.lua"
 local CURRENT_PLACE_ID = game.PlaceId
 
-local function loadScriptFromUrl(url)
-    local success, result = pcall(game.HttpGet, game, url)
-    if not success or not result then
-        warn(string.format("❌ HttpGet failed or returned empty for URL: %s\nError: %s", url, tostring(result)))
-        return false, "HttpGet failed or returned empty"
-    end
-
-    local func, loadErr = loadstring(result)
-    if not func then
-        warn(string.format("❌ Failed to loadstring script from URL: %s\nError: %s", url, tostring(loadErr)))
-        return false, "loadstring failed"
-    end
-
-    local execSuccess, execErr = pcall(func)
-    if not execSuccess then
-        warn(string.format("❌ Failed to execute script from URL: %s\nError: %s", url, tostring(execErr)))
-        return false, "Execution failed"
-    end
-
-    print(string.format("✅ Successfully loaded and executed script from: %s", url))
-    return true, "Success"
+-- Enhanced logging function
+local function logMessage(level, message)
+    local prefix = {
+        INFO = "ℹ️ [INFO]",
+        WARN = "⚠️ [WARN]",
+        ERROR = "❌ [ERROR]",
+        SUCCESS = "✅ [SUCCESS]",
+        DEBUG = "🔍 [DEBUG]"
+    }
+    print(string.format("%s %s", prefix[level] or "[LOG]", message))
 end
 
-local specificUrl = Games[CURRENT_PLACE_ID]
-local specificLoadSuccess = false
-local specificLoadError = ""
+-- Function to attempt loading and executing a script from a given URL
+local function tryLoadScriptFromUrl(url, scriptName)
+    scriptName = scriptName or "Script" -- Default script name for logging
+    logMessage("DEBUG", string.format("Attempting to HttpGet '%s' from URL: %s", scriptName, url))
 
-if specificUrl then
-    print(string.format("🔍 Found game-specific script for Place ID: %d. Loading: %s", CURRENT_PLACE_ID, specificUrl))
-    specificLoadSuccess, specificLoadError = loadScriptFromUrl(specificUrl)
+    local success, contentOrError = pcall(function()
+        return game:HttpGet(url, true) -- Second argument 'true' for no-cache, can be useful for development
+    end)
+
+    if not success or not contentOrError then
+        logMessage("ERROR", string.format("HttpGet failed for '%s' at URL: %s\nNetwork Error: %s", scriptName, url, tostring(contentOrError)))
+        return false, "HttpGet request failed"
+    end
+
+    if contentOrError == "" then -- Check if content is empty string specifically
+        logMessage("WARN", string.format("HttpGet for '%s' from URL: %s returned empty content.", scriptName, url))
+        -- Depending on strictness, you might want to treat this as a failure or allow it.
+        -- For script loading, empty content is usually a failure.
+        return false, "HttpGet returned empty"
+    end
+
+    logMessage("DEBUG", string.format("HttpGet successful for '%s'. Content length: %d. Attempting to loadstring.", scriptName, #contentOrError))
+
+    local loadedFunction, loadstringError = loadstring(contentOrError)
+    if not loadedFunction then
+        logMessage("ERROR", string.format("loadstring failed for '%s' from URL: %s\nLoadstring Error: %s", scriptName, url, tostring(loadstringError)))
+        return false, "loadstring compilation failed"
+    end
+
+    logMessage("DEBUG", string.format("loadstring successful for '%s'. Attempting to execute.", scriptName))
+
+    local executionSuccess, executionError = pcall(loadedFunction)
+    if not executionSuccess then
+        logMessage("ERROR", string.format("Execution failed for '%s' from URL: %s\nExecution Error: %s", scriptName, url, tostring(executionError)))
+        return false, "Script execution failed"
+    end
+
+    logMessage("SUCCESS", string.format("Successfully loaded and executed '%s' from: %s", scriptName, url))
+    return true, "Successfully loaded"
 end
 
-if not specificLoadSuccess then
-    if specificUrl then
-        print(string.format("⚠️ Failed to load game-specific script (%s). Loading Universal Loader: %s", specificLoadError, UNIVERSAL_LOADER_URL))
+-- Main execution logic
+local function main()
+    logMessage("INFO", string.format("Current Place ID: %d", CURRENT_PLACE_ID))
+
+    local specificScriptUrl = GAME_SPECIFIC_SCRIPTS[CURRENT_PLACE_ID]
+    local specificScriptLoaded = false
+    local specificScriptErrorMsg = ""
+
+    if specificScriptUrl then
+        logMessage("INFO", string.format("Found game-specific script for Place ID %d. URL: %s", CURRENT_PLACE_ID, specificScriptUrl))
+        specificScriptLoaded, specificScriptErrorMsg = tryLoadScriptFromUrl(specificScriptUrl, "Game-Specific Script")
     else
-        print(string.format("⚠️ No game-specific script found for Place ID: %d. Loading Universal Loader: %s", CURRENT_PLACE_ID, UNIVERSAL_LOADER_URL))
+        logMessage("INFO", string.format("No game-specific script found for Place ID: %d.", CURRENT_PLACE_ID))
     end
-    -- Attempt to load the universal loader if the specific one failed or wasn't found
-    local universalLoadSuccess, universalLoadError = loadScriptFromUrl(UNIVERSAL_LOADER_URL)
-    if not universalLoadSuccess then
-        warn(string.format("❌ Critical Error: Failed to load both game-specific (if attempted) and universal loader (%s).", universalLoadError))
-        -- Optionally, notify the user via UI if possible, or print a clear error message.
-        print("Please check your internet connection or the script URLs.")
+
+    if not specificScriptLoaded then
+        if specificScriptUrl then -- This means a specific script was found but failed to load
+            logMessage("WARN", string.format("Game-specific script failed to load (Reason: %s). Attempting to load Universal Loader.", specificScriptErrorMsg))
+        else -- This means no specific script was found in the first place
+            logMessage("INFO", "Attempting to load Universal Loader as no game-specific script was designated.")
+        end
+        
+        logMessage("DEBUG", string.format("Universal Loader URL: %s", UNIVERSAL_LOADER_URL))
+        local universalLoaded, universalErrorMsg = tryLoadScriptFromUrl(UNIVERSAL_LOADER_URL, "Universal Loader")
+
+        if not universalLoaded then
+            logMessage("ERROR", string.format("Critical: Failed to load Universal Loader.\nReason: %s", universalErrorMsg))
+            logMessage("ERROR", "Neither game-specific (if attempted/found) nor universal script could be loaded. Please check network or script URLs.")
+            -- Consider adding a user-facing notification here if this is part of a GUI
+            -- For example, if you have a notification system:
+            -- YourNotificationSystem:ShowError("Failed to load required scripts. Functionality may be limited.")
+        end
+    else
+        logMessage("INFO", "Game-specific script loaded successfully. Universal Loader will not be loaded.")
     end
+    logMessage("INFO", "Script loader finished.")
+end
+
+-- Run the main logic in a protected call to catch any unexpected errors in the loader itself
+local loaderSuccess, loaderError = pcall(main)
+if not loaderSuccess then
+    logMessage("ERROR", string.format("Unhandled error in script loader: %s", tostring(loaderError)))
 end
