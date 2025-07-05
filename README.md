@@ -1,26 +1,35 @@
 # Cookieys Hub Loader
 
-Loads game-specific scripts from [Cookieys Hub](https://github.com/cookieys/cookieys-hub) based on Place ID, with fallback.
+A dynamic script loader for Roblox that automatically executes the appropriate script based on the current game's Place ID.
 
-## Features
+## Overview
 
-* Auto game detection.
-* Targeted script loading.
-* Fallback support (e.g., Infinite Yield).
-* Easy config (Place IDs & script URLs).
+This loader is designed to streamline the process of using game-specific scripts. It intelligently detects the game you are currently playing and fetches the corresponding script from the [Cookieys Hub repository](https://github.com/cookieys/cookieys-hub). If a script for the specific game doesn't exist or fails to load, it automatically falls back to a universal script.
+
+### Key Features
+
+-   **Automatic Game Detection:** Identifies the current game using its `PlaceId`.
+-   **Dynamic Script Loading:** Fetches and executes scripts tailored for the specific game you're in.
+-   **Fallback Mechanism:** Loads a default universal script (e.g., Infinite Yield) if a game-specific one is not found or fails.
+-   **Centralized Configuration:** Game-to-script mappings are managed in a single, easy-to-edit `Games.lua` file.
 
 ## How to Use
 
-1.  Copy loader script (e.g., `https://raw.githubusercontent.com/cookieys/loader/main/loader.lua`).
-2.  Paste into your Roblox Lua executor.
-3.  Execute in-game.
+1.  Copy the following one-line command:
+    ```lua
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/cookieys/loader/main/Loader.lua", true))()
+    ```
+2.  Paste the command into your Roblox Lua executor.
+3.  Execute the script while in-game.
 
 ## Supported Games
 
-Defined in the loader script or config (e.g., `Games.lua`). Check source.
+The list of supported games is defined in the `Games.lua` configuration file within the repository. For an up-to-date list, please refer to the source.
 
-## Disclaimer
+[**View Supported Games Configuration**](https://github.com/cookieys/loader/blob/main/Games.lua)
 
-* Educational purposes only.
-* Exploiting violates Roblox TOS.
-* Use at your own risk.
+---
+
+## ⚠️ Disclaimer
+
+> This project is intended for educational purposes only. Using third-party scripts to exploit or modify the Roblox client is a direct violation of the Roblox Terms of Service. The user assumes all responsibility and risk associated with the use of this loader.
