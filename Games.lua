@@ -11,6 +11,8 @@ local GameScripts = {
     [15234596844] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Bb%20train.lua",
     -- Beaks
     [122678592501168] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Beaks.lua",
+    -- Grow a Garden
+    [126884695634066] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Gag.lua",
 }
 
 local UniversalScript = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/universal.lua"
