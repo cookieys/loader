@@ -7,12 +7,14 @@ local GameScripts = {
     [74260430392611] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Rc%20ultimate.lua",
     -- Blade Ball
     [13772394625] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Blade%20ball.lua",
-    -- Blade Ball Traning Place
+    -- Blade Ball Training Place
     [15234596844] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Bb%20train.lua",
     -- Beaks
     [122678592501168] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Beaks.lua",
     -- Grow a Garden
     [126884695634066] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Gag.lua",
+    -- Murder Mystery 2
+    [142823291] = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/Mm2.lua",
 }
 
 local UniversalScript = "https://raw.githubusercontent.com/cookieys/cookieys-hub/refs/heads/main/universal.lua"
