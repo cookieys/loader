@@ -1,1 +1,84 @@
-local a={Url="https://raw.githubusercontent.com/cookieys/loader/refs/heads/main/Games.lua",Retries=3,Debug=true}local b="[Cookieys Loader]: "local c=syn and syn.request or http and http.request or http_request or fluxus and fluxus.request or request;local function d(e,f)if not a.Debug then return end;f and warn or print(b..tostring(e))end;local function g(h)for i=1,a.Retries do local j;if c then local k,l=pcall(c,{Url=h,Method="GET"})if k and type(l)=="table"and l.StatusCode==200 then j=l.Body end else local k,l=pcall(game.HttpGet,game,h,true)if k then j=l end end;if type(j)=="string"and j~=""and not j:match("^%s*<")then return j end;if i<a.Retries then d("Fetch failed (%d/%d), retrying...":format(i,a.Retries),true)task.wait(i)end end;return nil,"Failed to fetch after "..a.Retries.." attempts: "..h end;local function m(n,o)local p,q=loadstring(n,"="..o)if not p then return nil,"Syntax error in "..o..": "..tostring(q)end;return p end;if not game:IsLoaded()then game.Loaded:Wait()end;task.spawn(function()d("Fetching games list...")local r,q=g(a.Url)if not r then return d(q,true)end;local s,t=m(r,"Games.lua")if not s then return d(t,true)end;local k,u=pcall(s)if not k then return d("Games.lua errored: "..tostring(u),true)end;if type(u)~="table"then return d("Games.lua did not return a table.",true)end;local v,w=game.PlaceId,game.GameId;local x=u[v]or u[tostring(v)]or u[w]or u[tostring(w)]if not x then d("No game-specific script, checking Universal...")x=u.Universal or u.universal end;if not x then return d("No supported script for PlaceId "..v,true)end;d("Loading script from: "..x)local n,y=g(x)if not n then return d("Download failed: "..tostring(y),true)end;local p,z=m(n,"GameScript")if not p then return d(z,true)end;local A,B=xpcall(p,debug.traceback)if A then d("Script executed successfully!")else d("Script errored:\n"..tostring(B),true)end end)
+local CONFIG = {
+    Url = "https://raw.githubusercontent.com/cookieys/loader/refs/heads/main/Games.lua",
+    Retries = 3,
+    Debug = true,
+}
+
+local TAG = "[Cookieys Loader]: "
+local httpRequest = (syn and syn.request) or (http and http.request) or http_request
+    or (fluxus and fluxus.request) or request
+
+local function log(msg, isWarn)
+    if not CONFIG.Debug then return end
+    (isWarn and warn or print)(TAG .. tostring(msg))
+end
+
+local function fetch(url)
+    for attempt = 1, CONFIG.Retries do
+        local body
+        if httpRequest then
+            local ok, res = pcall(httpRequest, { Url = url, Method = "GET" })
+            if ok and type(res) == "table" and res.StatusCode == 200 then body = res.Body end
+        else
+            local ok, res = pcall(game.HttpGet, game, url, true)
+            if ok then body = res end
+        end
+
+        if type(body) == "string" and body ~= "" and not body:match("^%s*<") then
+            return body
+        end
+
+        if attempt < CONFIG.Retries then
+            log(("Fetch failed (%d/%d), retrying..."):format(attempt, CONFIG.Retries), true)
+            task.wait(attempt)
+        end
+    end
+    return nil, "Failed to fetch after " .. CONFIG.Retries .. " attempts: " .. url
+end
+
+local function compile(src, name)
+    local fn, err = loadstring(src, "=" .. name)
+    if not fn then return nil, "Syntax error in " .. name .. ": " .. tostring(err) end
+    return fn
+end
+
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+task.spawn(function()
+    log("Fetching games list...")
+    local listSrc, err = fetch(CONFIG.Url)
+    if not listSrc then return log(err, true) end
+
+    local listFn, cerr = compile(listSrc, "Games.lua")
+    if not listFn then return log(cerr, true) end
+
+    local ok, list = pcall(listFn)
+    if not ok then return log("Games.lua errored: " .. tostring(list), true) end
+    if type(list) ~= "table" then return log("Games.lua did not return a table.", true) end
+
+    local placeId, gameId = game.PlaceId, game.GameId
+    local scriptUrl = list[placeId] or list[tostring(placeId)]
+        or list[gameId] or list[tostring(gameId)]
+
+    if not scriptUrl then
+        log("No game-specific script, checking Universal...")
+        scriptUrl = list.Universal or list.universal
+    end
+    if not scriptUrl then
+        return log("No supported script for PlaceId " .. placeId, true)
+    end
+
+    log("Loading script from: " .. scriptUrl)
+    local src, ferr = fetch(scriptUrl)
+    if not src then return log("Download failed: " .. tostring(ferr), true) end
+
+    local fn, serr = compile(src, "GameScript")
+    if not fn then return log(serr, true) end
+
+    local runOk, runErr = xpcall(fn, debug.traceback)
+    if runOk then
+        log("Script executed successfully!")
+    else
+        log("Script errored:\n" .. tostring(runErr), true)
+    end
+end)
